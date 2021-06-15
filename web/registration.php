@@ -29,7 +29,7 @@ class Registration
     private function generateNewToken()
     {
         // generate a 16 character random token
-        $characters = "9876543210abcdefghijklmnopqrstuvwxyzABCDEFGHJIJKLMNOPQRSTUVWXYZ!@#$%^&*()<>[]{}";
+        $characters = "9876543210abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()<>[]{}";
         $charactersLength = strlen($characters);
         $randString = "";
         for ($i = 0; $i < 16; $i++)
@@ -66,6 +66,10 @@ class Registration
     }
 }
 
-$reg = new Registration($_GET["name"], $_GET["email"], $_GET["password"]);
-$reg->begin();
+if (isset($_GET["name"]) and isset($_GET["email"]) and isset($_GET["password"])) {
+    $reg = new Registration($_GET["name"], $_GET["email"], $_GET["password"]);
+    $reg->begin();
+} else
+    die("Invalid URL");
+
 ?>

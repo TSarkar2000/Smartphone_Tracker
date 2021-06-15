@@ -62,5 +62,6 @@ public class MainActivity extends AppCompatActivity {
         Snackbar.make(findViewById(R.id.mainLayout), message, 2000).show();
         if(extra == 0)
             viewPager2.setCurrentItem(0);
+        // todo: start next activity here
     };
 }

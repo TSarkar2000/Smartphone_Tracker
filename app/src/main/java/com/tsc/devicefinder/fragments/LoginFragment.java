@@ -1,5 +1,6 @@
 package com.tsc.devicefinder.fragments;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,6 +13,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.tsc.devicefinder.InnerActivity;
 import com.tsc.devicefinder.R;
 import com.tsc.devicefinder.core.Auth;
 
@@ -25,7 +27,8 @@ public class LoginFragment extends Fragment {
         Button btn = v.findViewById(R.id.loginBtn);
         btn.setOnClickListener(v1 -> {
             // request login
-            new Auth(email.getText().toString(), pwd.getText().toString()).begin();
+            //new Auth(email.getText().toString(), pwd.getText().toString()).begin();
+            startActivity(new Intent(v.getContext(), InnerActivity.class));
         });
         TextView forgotPwd = v.findViewById(R.id.forgotPwd);
         forgotPwd.setOnClickListener(v1 -> {

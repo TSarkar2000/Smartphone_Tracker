@@ -7,15 +7,15 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.Fragment;
 
 import com.tsc.devicefinder.R;
 
-public class LoadingDialog extends DialogFragment {
-
+public class DeviceFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.loading_dialog, container, false);
+        View v = inflater.inflate(R.layout.view_devices, container, false);
+        return v;
     }
 }
