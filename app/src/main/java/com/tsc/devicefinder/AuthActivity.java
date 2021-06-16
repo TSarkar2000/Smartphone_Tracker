@@ -10,7 +10,7 @@ import com.google.android.material.tabs.TabLayout;
 import com.tsc.devicefinder.utils.Events;
 import com.tsc.devicefinder.utils.FragmentAdapter;
 
-public class MainActivity extends AppCompatActivity {
+public class AuthActivity extends AppCompatActivity {
 
     TabLayout tabLayout;
     ViewPager2 viewPager2;
@@ -19,7 +19,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_auth);
 
         Events.getInstance().registerAuthMessageListener(authMessageListener);
 

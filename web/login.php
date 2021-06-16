@@ -1,6 +1,9 @@
 <?php
 require "definitions.php";
 
+// starting a session to hold login state
+session_start();
+
 class Login
 {
     private $email, $password;
@@ -24,8 +27,9 @@ class Login
         return $this->sql->query($str)->num_rows == 1 ? true : false;
     }
 
-    private function fetchData() {
-        $str = "select `name`, `uid`, `device_count` from ".tableName." where `email`= '$this->email'";
+    private function fetchData()
+    {
+        $str = "select `name`, `uid`, `device_count` from " . tableName . " where `email`= '$this->email'";
         $obj = $this->sql->query($str)->fetch_object();
         echo json_encode($obj);
     }
@@ -34,10 +38,10 @@ class Login
     {
         if ($this->isConnected())
             if ($this->checkIfDataExists()) {
+                $_SESSION['loggedIn'] = true;
                 echo "SUCCESS";
                 $this->fetchData();
-            }
-            else
+            } else
                 echo "Account doesn't exist";
         else
             echo "Couldn't connect to database";

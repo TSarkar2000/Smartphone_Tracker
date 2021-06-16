@@ -4,14 +4,16 @@ require "definitions.php";
 class Registration
 {
     // variable declarations
-    private $name, $email, $password, $token;
+    private $name, $email, $password, $token, $deviceID, $deviceInfo;
     private mysqli $sql;
 
-    public function __construct($name, $email, $password)
+    public function __construct($name, $email, $password, $deviceID, $deviceInfo)
     {
         $this->name = $name;
         $this->email = $email;
         $this->password = hash('sha256', $password);
+        $this->deviceID = $deviceID;
+        $this->deviceInfo = $deviceInfo;
     }
 
     private function isConnected()
@@ -43,12 +45,14 @@ class Registration
         // keep looping until a brand new token is obtained
         while ($this->checkIfDataExists("uid", $this->token))
             $this->token = $this->generateNewToken();
-        // insert into database
-        $str = "insert into " . tableName . "(`id`, `name`, `email`, `password`, `uid`, `device_count`, `timestamp`) 
-                VALUES (NULL, '$this->name', '$this->email', '$this->password', '$this->token', '0', NULL);";
 
-        $res = $this->sql->query($str);
-        return $res;
+        // insert into users table
+        $str = "insert into " . tableName . "(`id`, `name`, `email`, `password`, `uid`, `device_count`, `timestamp`) 
+                VALUES (NULL, '$this->name', '$this->email', '$this->password', '$this->token', '1', NULL);";
+        // insert into device_data table
+        $str .= "insert into " . dataTableName . " (`token`, `device_id`, `device_info`) VALUES ('$this->token', '$this->deviceID', '$this->deviceInfo')";
+
+        return $this->sql->multi_query($str);
     }
 
     public function begin()
@@ -66,8 +70,8 @@ class Registration
     }
 }
 
-if (isset($_GET["name"]) and isset($_GET["email"]) and isset($_GET["password"])) {
-    $reg = new Registration($_GET["name"], $_GET["email"], $_GET["password"]);
+if (isset($_POST["name"]) and isset($_POST["email"]) and isset($_POST["password"]) and isset($_POST["deviceID"]) and isset($_POST["deviceInfo"])) {
+    $reg = new Registration($_POST["name"], $_POST["email"], $_POST["password"], $_POST["deviceID"], $_POST["deviceInfo"]);
     $reg->begin();
 } else
     die("Invalid URL");

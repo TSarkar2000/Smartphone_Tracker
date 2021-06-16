@@ -1,6 +1,8 @@
 package com.tsc.devicefinder.fragments;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Patterns;
 import android.view.LayoutInflater;
@@ -18,6 +20,7 @@ import com.tsc.devicefinder.R;
 import com.tsc.devicefinder.core.Auth;
 
 public class RegistrationFragment extends Fragment {
+    @SuppressLint("HardwareIds")
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -38,7 +41,9 @@ public class RegistrationFragment extends Fragment {
                                 if (!TextUtils.isEmpty(pwd2.getText()))
                                     if (TextUtils.equals(pwd.getText(), pwd2.getText()))
                                         // request registration
-                                            new Auth(name.getText().toString(), email.getText().toString(), pwd.getText().toString()).begin();
+                                            new Auth(name.getText().toString(), email.getText().toString(), pwd.getText().toString()
+                                                    , Settings.Secure.getString(getContext().getContentResolver(), Settings.Secure.ANDROID_ID))
+                                                    .begin();
                                     else
                                         pwd2.setError("Passwords do not match!");
                                 else

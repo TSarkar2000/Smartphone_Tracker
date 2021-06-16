@@ -3,8 +3,10 @@ package com.tsc.devicefinder.core;
 import android.os.AsyncTask;
 
 import com.tsc.devicefinder.utils.Events;
+import com.tsc.devicefinder.utils.GetDeviceInfo;
 
 import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -12,10 +14,9 @@ import java.net.URL;
 
 public class Auth {
 
-    private String name;
+    private String name, deviceID;
     private final String email;
     private final String password;
-    private final String baseUrl = "http://192.168.0.100/dashboard/";
     private final Events events = Events.getInstance();
     private final int flag;
 
@@ -25,26 +26,35 @@ public class Auth {
         this.password = password;
     }
 
-    public Auth(String name, String email, String password) {
+    public Auth(String name, String email, String password, String deviceID) {
         flag = 0;
         this.name = name;
         this.email = email;
         this.password = password;
+        this.deviceID = deviceID;
+    }
+
+    private String buildParams() {
+        StringBuilder params = new StringBuilder();
+        if(flag == 1)
+            params.append("email=").append(email).append("&password=").append(password);
+        else
+            params.append("name=").append(name).append("&email=").append(email).append("&password=").append(password)
+                    .append("&deviceID=").append(deviceID).append("&deviceInfo=").append(new GetDeviceInfo().toJson());
+
+        return params.toString();
     }
 
     public void begin() {
-        String url = "";
-        if (flag == 1)
-            url += baseUrl + "/login.php?email=" + email + "&password=" + password;
-        else
-            url += baseUrl + "/registration.php?name=" + name + "&email=" + email + "&password=" + password;
+        String url = "http://192.168.0.101/dashboard/";
+        url += flag == 1 ? "login.php": "registration.php";
 
-        new Task().execute(url);
+        new Task().execute(url, buildParams());
     }
 
     class Task extends AsyncTask<String, Void, Void> {
 
-        private String data = "";
+        private String msg = "";
 
         @Override
         protected void onPreExecute() {
@@ -53,23 +63,29 @@ public class Auth {
 
         @Override
         protected void onPostExecute(Void aVoid) {
-            events.fireAuthMessageEvent(data, data.contains("SUCCESS") ? flag : -1);
+            events.fireAuthMessageEvent(msg, msg.contains("SUCCESS") ? flag : -1);
         }
 
         @Override
         protected Void doInBackground(String... strings) {
             try {
                 URL url = new URL(strings[0]);
+                byte[] data = strings[1].getBytes();
                 HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-                urlConnection.setRequestMethod("GET");
-                BufferedReader br = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
-                String x = "";
-                while ((x = br.readLine()) != null)
-                    data += x;
-                br.close();
+                urlConnection.setDoOutput(true);
+                urlConnection.setRequestMethod("POST");
+                urlConnection.setRequestProperty( "Content-Type", "application/x-www-form-urlencoded");
+                urlConnection.setRequestProperty( "Content-Length", data.length+"");
+                try(DataOutputStream dos = new DataOutputStream(urlConnection.getOutputStream())) {
+                    dos.write(data);
+                }
+                try(BufferedReader reader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()))) {
+                    String x = "";
+                    while ((x = reader.readLine()) != null)
+                        msg += x;
+                }
                 urlConnection.disconnect();
             } catch (IOException e) {
-
                 e.printStackTrace();
             }
             return null;
