@@ -22,9 +22,9 @@ class Registration
         return $this->sql->connect_error ? false : true;
     }
 
-    private function checkIfDataExists($col, $value)
+    private function checkIfDataExists($table, $col, $value)
     {
-        $str = "select * from " . tableName . " where `$col` = '$value'";
+        $str = "select * from " . $table . " where `$col` = '$value'";
         return $this->sql->query($str)->num_rows == 0 ? false : true;
     }
 
@@ -36,21 +36,20 @@ class Registration
         $randString = "";
         for ($i = 0; $i < 16; $i++)
             $randString .= $characters[rand(0, $charactersLength - 1)];
+
+        while ($this->checkIfDataExists(tableName, "uid", $randString))
+            $randString = $this->generateNewToken();
+
         return $randString;
     }
 
-    private function insertData()
-    {
+    private function insertData() {
         $this->token = $this->generateNewToken();
-        // keep looping until a brand new token is obtained
-        while ($this->checkIfDataExists("uid", $this->token))
-            $this->token = $this->generateNewToken();
-
-        // insert into users table
+        // add to users table
         $str = "insert into " . tableName . "(`id`, `name`, `email`, `password`, `uid`, `device_count`, `timestamp`) 
                 VALUES (NULL, '$this->name', '$this->email', '$this->password', '$this->token', '1', NULL);";
-        // insert into device_data table
-        $str .= "insert into " . dataTableName . " (`token`, `device_id`, `device_info`) VALUES ('$this->token', '$this->deviceID', '$this->deviceInfo')";
+        // add to device_data table
+        $str .= "insert into " . dataTableName . " (`token`, `device_id`, `device_info`) VALUES ('$this->token', '$this->deviceID', '$this->deviceInfo');";
 
         return $this->sql->multi_query($str);
     }
@@ -58,15 +57,18 @@ class Registration
     public function begin()
     {
         if ($this->isConnected()) {
-            if (!$this->checkIfDataExists("email", $this->email)) {
-                if ($this->insertData())
-                    echo "SUCCESS";
+            if(!$this->checkIfDataExists(tableName,'email', $this->email))
+                if(!$this->checkIfDataExists(dataTableName, 'device_id', $this->deviceID))
+                    if ($this->insertData())
+                        echo "SUCCESS";
+                    else
+                        echo "Error";
                 else
-                    echo "Sorry, please try again later";
-            } else
-                echo "Account already exists";
+                    die("Device already registered");
+            else
+                die("Account already exists, please login.");
         } else
-            echo "Couldn't connect to database";
+            die("Couldn't connect to database");
     }
 }
 

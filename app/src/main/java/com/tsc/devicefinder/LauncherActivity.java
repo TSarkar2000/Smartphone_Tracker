@@ -13,5 +13,6 @@ public class LauncherActivity extends AppCompatActivity {
         setContentView(R.layout.activity_launcher);
 
         startActivity(new Intent(this, AuthActivity.class));
+        finish();
     }
 }

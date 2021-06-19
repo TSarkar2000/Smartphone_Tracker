@@ -29,9 +29,10 @@ class Login
 
     private function fetchData()
     {
-        $str = "select `name`, `uid`, `device_count` from " . tableName . " where `email`= '$this->email'";
-        $obj = $this->sql->query($str)->fetch_object();
-        echo json_encode($obj);
+        $obj = $this->sql->query("select `name`, `uid`, `device_count` from " . tableName . " where `email`= '$this->email'")->fetch_object();
+        $arr = $this->sql->query("select `device_info` from " . dataTableName . " where `token`= '$obj->uid'")->fetch_all();
+        $x = array("user_info" => $obj, "device_info" => $arr);
+        echo json_encode($x);
     }
 
     public function begin()
@@ -49,8 +50,8 @@ class Login
 
 }
 
-if (isset($_GET["email"]) and isset($_GET["password"])) {
-    $log = new Login($_GET["email"], $_GET["password"]);
+if (isset($_POST["email"]) and isset($_POST["password"])) {
+    $log = new Login($_POST["email"], $_POST["password"]);
     $log->begin();
 } else
     die("Invalid URL");

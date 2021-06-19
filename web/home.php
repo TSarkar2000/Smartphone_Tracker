@@ -17,22 +17,41 @@ class Home
     }
 
     private function deviceExists($value) {
-        // select device_data.device_id from users inner join device_data on users.uid = device_data.token where device_data.device_id = 'vivo_1904-123456789'
+        //
         $str = "select * from ".dataTableName." where `device_id` = $value";
         return $this->sql->query($str)->num_rows == 1 ? true: false;
     }
 
-    /**
-    @parameters:
-       token - unique 16 character token assigned to each user on registration
-       device_id - unique device identifier obtained from app
-
-    @return:
-        boolean value representing whether addition was successful
-   */
-    public function addDevice($token, $device_id)
+    /*
+     * ACCOUNT doesn't exist, DEVICE doesn't exist: generate new token & insert to both tables
+     * ACCOUNT doesn't exist, DEVICE exists: reject
+     * ACCOUNT exists, DEVICE doesn't exist: use old token & insert into device_data, update users table
+     * ACCOUNT exists, DEVICE exists: reject & redirect to login
+     * todo : problem here
+     */
+    private function insertData()
     {
+        $str = "";
+        if (!$this->checkIfDataExists(dataTableName, "deviceID", $this->deviceID)) {
+            if (!$this->checkIfDataExists(tableName, "email", $this->email)) {
+                // get new token
+                $this->token = $this->generateNewToken();
+                // insert into users table
+                $str .= "insert into " . tableName . "(`id`, `name`, `email`, `password`, `uid`, `device_count`, `timestamp`) 
+                VALUES (NULL, '$this->name', '$this->email', '$this->password', '$this->token', '1', NULL);";
+            } else {
+                $obj = $this->sql->query("select `uid`, `device_count` from " . tableName . " where `email` = '$this->email'")->fetch_object();
+                // get old token
+                $this->token = $obj->uid;
+                $x = $obj->device_count + 1;
+                $str .= "update " . tableName . " set `device_count` = '$x' where `email` = '$this->email';";
+            }
 
+            $str .= "insert into " . dataTableName . " (`token`, `device_id`, `device_info`) VALUES ('$this->token', '$this->deviceID', '$this->deviceInfo');";
+            return $this->sql->multi_query($str);
+        }
+
+        return false;
     }
 }
 
