@@ -1,4 +1,4 @@
-package com.tsc.devicefinder.utils;
+package com.tsc.devicefinder.core;
 
 public class Events {
 

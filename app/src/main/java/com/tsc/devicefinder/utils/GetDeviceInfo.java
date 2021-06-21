@@ -6,11 +6,17 @@ import com.google.gson.Gson;
 
 public class GetDeviceInfo {
 
-    public String toJson() {
-        return new Gson().toJson(new DeviceInfo());
+    public String toJson(String owner) {
+        return new Gson().toJson(new DeviceInfo(owner));
     }
 
     class DeviceInfo {
+        String owner = "";
+
+        public DeviceInfo(String owner) {
+            this.owner = owner;
+        }
+
         String brand = Build.BRAND;
         String device = Build.DEVICE;
         String manufacturer = Build.MANUFACTURER;

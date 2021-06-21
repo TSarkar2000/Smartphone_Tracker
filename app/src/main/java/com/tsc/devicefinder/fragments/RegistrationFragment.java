@@ -16,6 +16,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.tsc.devicefinder.AuthActivity;
 import com.tsc.devicefinder.R;
 import com.tsc.devicefinder.core.Auth;
 
@@ -43,7 +44,7 @@ public class RegistrationFragment extends Fragment {
                                         // request registration
                                             new Auth(name.getText().toString(), email.getText().toString(), pwd.getText().toString()
                                                     , Settings.Secure.getString(getContext().getContentResolver(), Settings.Secure.ANDROID_ID))
-                                                    .begin();
+                                                    .begin(getParentFragmentManager());
                                     else
                                         pwd2.setError("Passwords do not match!");
                                 else
@@ -62,7 +63,7 @@ public class RegistrationFragment extends Fragment {
 
         TextView existingTxt = v.findViewById(R.id.existingTxt);
         existingTxt.setOnClickListener(v1 -> {
-            // do something
+            ((AuthActivity)getActivity()).viewPager2.setCurrentItem(0);
         });
 
         return v;

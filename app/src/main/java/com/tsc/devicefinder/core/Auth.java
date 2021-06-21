@@ -2,7 +2,9 @@ package com.tsc.devicefinder.core;
 
 import android.os.AsyncTask;
 
-import com.tsc.devicefinder.utils.Events;
+import androidx.fragment.app.FragmentManager;
+
+import com.tsc.devicefinder.fragments.LoadingDialog;
 import com.tsc.devicefinder.utils.GetDeviceInfo;
 
 import java.io.BufferedReader;
@@ -14,6 +16,7 @@ import java.net.URL;
 
 public class Auth {
 
+    private FragmentManager manager;
     private String name, deviceID;
     private final String email;
     private final String password;
@@ -40,13 +43,14 @@ public class Auth {
             params.append("email=").append(email).append("&password=").append(password);
         else
             params.append("name=").append(name).append("&email=").append(email).append("&password=").append(password)
-                    .append("&deviceID=").append(deviceID).append("&deviceInfo=").append(new GetDeviceInfo().toJson());
+                    .append("&deviceID=").append(deviceID).append("&deviceInfo=").append(new GetDeviceInfo().toJson(name));
 
         return params.toString();
     }
 
-    public void begin() {
-        String url = "http://192.168.0.101/dashboard/";
+    public void begin(FragmentManager manager) {
+        this.manager = manager;
+        String url = "http://192.168.0.102/dashboard/";
         url += flag == 1 ? "login.php": "registration.php";
 
         new Task().execute(url, buildParams());
@@ -55,15 +59,19 @@ public class Auth {
     class Task extends AsyncTask<String, Void, Void> {
 
         private String msg = "";
+        private LoadingDialog ldg;
 
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
+            ldg = new LoadingDialog();
+            ldg.show(manager, "abc");
         }
 
         @Override
         protected void onPostExecute(Void aVoid) {
             events.fireAuthMessageEvent(msg, msg.contains("SUCCESS") ? flag : -1);
+            ldg.dismiss();
         }
 
         @Override

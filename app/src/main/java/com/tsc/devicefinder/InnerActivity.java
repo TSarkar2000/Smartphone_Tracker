@@ -13,8 +13,17 @@ import androidx.fragment.app.Fragment;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.tsc.devicefinder.fragments.DeviceFragment;
 import com.tsc.devicefinder.fragments.MapFragment;
+import com.tsc.devicefinder.utils.Device;
+import com.tsc.devicefinder.utils.User;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class InnerActivity extends AppCompatActivity {
 
@@ -34,6 +43,7 @@ public class InnerActivity extends AppCompatActivity {
         // check if permission to access location is granted
         if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
             reqPermission();
+
     }
 
     private final BottomNavigationView.OnNavigationItemSelectedListener listener = item -> {
@@ -64,5 +74,35 @@ public class InnerActivity extends AppCompatActivity {
             Snackbar.make(findViewById(R.id.container), "You won't be able to access maps until you grant location access.", 3000).show();
             bnv.getMenu().findItem(R.id.map_menu).setEnabled(false);
         } else bnv.getMenu().findItem(R.id.map_menu).setEnabled(true);
+    }
+
+    private static class GetJsonData {
+
+        static List<Device> getDeviceList(String json) {
+            JsonElement element = JsonParser.parseString(json);
+            // get devices
+            List<Device> devices = new ArrayList<>();
+            JsonArray array = element.getAsJsonObject().get("device_info").getAsJsonArray();
+            for(JsonElement e : array) {
+                Device d = new Device();
+                JsonObject obj = e.getAsJsonObject();
+                d.setOwnerName(obj.get("owner").getAsString());
+                d.setDeviceName(obj.get("model").getAsString());
+                devices.add(d);
+            }
+            return devices;
+        }
+
+        static User getUserData(String json) {
+            JsonElement element = JsonParser.parseString(json);
+            // get current user info
+            User u = new User();
+            JsonObject obj = element.getAsJsonObject().get("user_info").getAsJsonObject();
+            u.setName(obj.get("name").getAsString());
+            u.setUid(obj.get("uid").getAsString());
+            u.setDeviceCount(obj.get("device_count").getAsInt());
+
+            return u;
+        }
     }
 }

@@ -1,5 +1,7 @@
 package com.tsc.devicefinder;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -7,14 +9,16 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
-import com.tsc.devicefinder.utils.Events;
+import com.tsc.devicefinder.core.Events;
 import com.tsc.devicefinder.utils.FragmentAdapter;
 
 public class AuthActivity extends AppCompatActivity {
 
     TabLayout tabLayout;
-    ViewPager2 viewPager2;
     FragmentAdapter fragmentAdapter;
+    public ViewPager2 viewPager2;
+    public SharedPreferences preferences;
+    public String email, password;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,9 +63,22 @@ public class AuthActivity extends AppCompatActivity {
     }
 
     private final Events.AuthMessageListener authMessageListener = (message, extra) -> {
-        Snackbar.make(findViewById(R.id.mainLayout), message, 2000).show();
-        if(extra == 0)
+        if (extra == -1)
+            Snackbar.make(findViewById(R.id.mainLayout), message, 2000).show();
+        else if (extra == 0)
             viewPager2.setCurrentItem(0);
-        // todo: start next activity here
+        else {
+            // save details
+            SharedPreferences.Editor editor = preferences.edit();
+            editor.putString("email", email);
+            editor.putString("password", password);
+            editor.apply();
+            // launch activity
+            Intent i = new Intent(this, InnerActivity.class);
+            i.putExtra("data", message.replace("SUCCESS", ""));
+            startActivity(i);
+
+            finish();
+        }
     };
 }
